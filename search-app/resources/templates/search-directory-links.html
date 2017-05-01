@@ -1,0 +1,12 @@
+{% extends "templates/search-base.html" %}
+
+{% block title %}CMR Search - Directory of Collections Landing Pages{% endblock %}
+
+{% block main-content %}
+<h2>Directory of Collections Landing Pages</h2>
+<ul>
+  {% for link in links %}
+  <li><a href="{{ base-url }}{{ link.href }}">{{ link.text }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}
