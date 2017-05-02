@@ -1,5 +1,6 @@
 (ns cmr.search.test.site.routes
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as string]
+            [clojure.test :refer :all]
             [cmr.search.site.routes :as r]
             [ring.mock.request :refer [request]]))
 
@@ -13,37 +14,37 @@
                          :relative-root-url base-path}})
 (def ^:private site (#'cmr.search.site.routes/build-routes system))
 
-(defn- substring?
-  [test-value string]
-  (.contains string test-value))
-
-(deftest cmr-welcome-page
+(deftest search-welcome-page
   (testing "visited on a path without a trailing slash"
     (let [response (site (request :get base-url))]
       (testing "produces a HTTP 200 success response"
-        (is (= (:status response) 200)))
+        (is (= 200 (:status response))))
       (testing "returns the welcome page HTML"
-        (is (substring? "The Common Metadata Repository"
-                        (:body response))))))
+        (is (string/includes?
+             (:body response)
+             "The Common Metadata Repository")))))
   (testing "visited on a path with a trailing slash"
     (let [response (site (request :get (str base-url "/")))]
       (testing "produces a HTTP 200 success response"
-        (is (= (:status response) 200)))
+        (is (= 200 (:status response))))
       (testing "returns the welcome page HTML"
-        (is (substring? "The Common Metadata Repository"
-                        (:body response)))))))
+        (is (string/includes?
+             (:body response)
+             "The Common Metadata Repository"))))))
 
 (deftest collections-directory-page
   (testing "collections directory page returns content"
     (let [url-path "/site/collections/directory"
           response (site (request :get (str base-url url-path)))]
-      (is (= (:status response) 200))
+      (is (= 200 (:status response)))
       (testing "page title is correct"
-        (is (substring? "Directory of Collections Landing Pages"
-                        (:body response))))
+        (is (string/includes?
+             (:body response)
+              "Directory of Collections Landing Pages")))
       (testing "page has a link to EOSDIS collections directory"
-        (is (substring? "EOSDIS Collections"
-                        (:body response)))))))
+        (is (string/includes?
+             (:body response)
+             "EOSDIS Collections"))))))
 
 (deftest test-404
   (testing "a 404 is returned for a missing document"
@@ -52,55 +53,70 @@
                 (str base-url)
                 (request :get)
                 (site)
+                :status)))
+    (is (= 404
+           (->> "/site/docs/search/NOT-A-PAGE.html"
+                (str base-url)
+                (request :get)
+                (site)
                 :status)))))
 
-(deftest cmr-api-documentation-page
+(deftest search-api-documentation-page
   (let [response (site
                    (request
                      :get (str base-url "/site/docs/search/api.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
-      (is (= (:status response) 200))
-      (is (substring? "API Documentation" (:body response))))))
+      (is (= 200 (:status response)))
+      (is (string/includes?
+           (:body response)
+           "API Documentation")))))
 
-(deftest cmr-site-documentation-page
+(deftest search-site-documentation-page
   (let [response (site
                    (request
                      :get (str base-url "/site/docs/search/site.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
-      (is (= (:status response) 200))
-      (is (substring?
-            "Site Routes &amp; Web Resources Documentation" (:body response))))))
+      (is (= 200 (:status response)))
+      (is (string/includes?
+           (:body response)
+           "Site Routes &amp; Web Resources Documentation")))))
 
-(deftest cmr-all-documentation-page
+(deftest search-all-documentation-page
   (let [response (site (request :get (str base-url "/site/docs/search")))]
     (testing "all docs links appear here"
-      (is (= (:status response) 200))
-      (is (substring? "Documentation for CMR Search" (:body response)))
-      (is (substring? "site/docs/search/api" (:body response)))
-      (is (substring? "site/docs/search/site" (:body response))))))
+      (is (= 200 (:status response)))
+      (is (string/includes?
+           (:body response)
+           "Documentation for CMR Search"))
+      (is (string/includes?
+           (:body response)
+           "site/docs/search/api"))
+      (is (string/includes?
+           (:body response)
+           "site/docs/search/site")))))
 
-(deftest cmr-url-reorg-redirects
+(deftest search-url-reorg-redirects
   (let [response (site (request :get (str base-url "/site/docs/search/api")))]
     (testing "clean docs URL for api docs performs redirect"
-      (is (= (:status response) 307))
-      (is (substring?
-            "site/docs/search/api.html"
-            (get-in response [:headers "Location"])))))
+      (is (= 307 (:status response)))
+      (is (string/includes?
+            (get-in response [:headers "Location"])
+            "site/docs/search/api.html"))))
   (let [response (site (request :get (str base-url "/site/docs/search/site")))]
     (testing "clean docs URL for site docs performs redirect"
-      (is (= (:status response) 307))
-      (is (substring?
-            "site/docs/search/site.html"
-            (get-in response [:headers "Location"])))))
+      (is (= 307 (:status response)))
+      (is (string/includes?
+           (get-in response [:headers "Location"])
+           "site/docs/search/site.html"))))
   (let [response (site (request :get (str base-url "/site/search_api_docs.html")))]
     (testing "clean docs URL for api docs performs redirect"
-      (is (= (:status response) 301))
-      (is (substring?
-            "site/docs/search/api.html"
-            (get-in response [:headers "Location"])))))
+      (is (= 301 (:status response)))
+      (is (string/includes?
+            (get-in response [:headers "Location"])
+            "site/docs/search/api.html"))))
   (let [response (site (request :get (str base-url "/site/search_site_docs.html")))]
     (testing "clean docs URL for site docs performs redirect"
-      (is (= (:status response) 301))
-      (is (substring?
-            "site/docs/search/site.html"
-            (get-in response [:headers "Location"]))))))
+      (is (= 301 (:status response)))
+      (is (string/includes?
+            (get-in response [:headers "Location"])
+            "site/docs/search/site.html")))))
