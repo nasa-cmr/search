@@ -40,7 +40,7 @@
     (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
            (data/make-href cmr-base-url coll-data-1))))
   (testing "with doi data"
-    (is (= "http://dx.doi.org/doi6"
+    (is (= "https://doi.org/doi6"
            (data/make-href cmr-base-url coll-data-2)))))
 
 (deftest make-holding-data
@@ -53,7 +53,7 @@
       (is (= "6" (:version-id data)))))
   (testing "with an entry title, short name, and doi"
     (let [data (data/make-holding-data cmr-base-url coll-data-2)]
-      (is (= "http://dx.doi.org/doi6" (:link-href data)))
+      (is (= "https://doi.org/doi6" (:link-href data)))
       (is (= "s3" (:short-name data)))
       (is (= "7" (:version-id data))))))
 
@@ -65,6 +65,6 @@
            (get-in data [0 :link-href])))
     (is (= "s3" (get-in data [0 :short-name])))
     (is (= "6" (get-in data [0 :version-id])))
-    (is (= "http://dx.doi.org/doi6" (get-in data [1 :link-href])))
+    (is (= "https://doi.org/doi6" (get-in data [1 :link-href])))
     (is (= "s3" (get-in data [1 :short-name])))
     (is (= "7" (get-in data [1 :version-id])))))
