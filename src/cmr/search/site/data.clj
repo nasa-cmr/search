@@ -135,7 +135,7 @@
   "Create the `href` part of a landing page link."
   [cmr-base-url item]
   (if (has-doi? item)
-    (format "http://dx.doi.org/%s" (:doi-stored item))
+    (format "https://doi.org/%s" (:doi-stored item))
     (cmr-link cmr-base-url (:concept-id item))))
 
 (defn make-holding-data
